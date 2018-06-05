@@ -92,15 +92,15 @@ IsoSeq3调用[*lima*](https://github.com/pacificbiosciences/barcoding)以
 
     lima ccs.bam barcoded_primers.fasta demux.ccs.bam --isoseq --no-pbi
 
-PacBio官方推荐 Clontech SMARTer cDNA library prep的样本制库协议。下面例子为这种
-官方推荐制库协议在IsoSeq3中所对应的`primer.fasta`。
+PacBio官方推荐 Clontech SMARTer cDNA library prep的样本制库协议。
+下面例子为这种官方推荐制库协议在IsoSeq3中所对应的`primer.fasta`。
 
     >primer_5p
     AAGCAGTGGTATCAACGCAGAGTACATGGG
     >primer_3p
     GTACTCTGCGTTGATACCACTGCTT
 
-下面例子显示了16bp barcode + Clontech primer的样本库所对应的`primer.fasta`。
+下面例子为16bp barcode + Clontech primer的样本库所对应的`primer.fasta`。
 
     >primer_5p
     AAGCAGTGGTATCAACGCAGAGTACATGGGG
@@ -109,14 +109,15 @@ PacBio官方推荐 Clontech SMARTer cDNA library prep的样本制库协议。下
     >liver_3p
     CTCACAGTCTGTGTGTGTACTCTGCGTTGATACCACTGCTT
 
-*lima* 将 根据输入的`primer.fasta`信息，去除primer组合错误的 或 方向错误的ccs序列。
+*lima* 将 根据输入的`primer.fasta`，侦测并去除 包含错误的primer组合的ccs 或 方向错误的ccs。
 
-接下来，对每一个lima输出的BAM文件执行以下步骤。
+接下来，对每一个*lima*输出的BAM文件执行以下步骤。
 
 ### 聚类 （Clustering） 和 打磨纠错 （Polishing）
-*IsoSeq3* 将所有IsoSeq所需步骤囊括为子命令。
+*IsoSeq3* 以 子命令 的形式，提供所有IsoSeq所需执行任务。
 
     $ isoseq3
+
     isoseq3 - De Novo Transcript Reconstruction
 
     Tools:
@@ -131,18 +132,18 @@ PacBio官方推荐 Clontech SMARTer cDNA library prep的样本制库协议。下
 
 #### 聚类 （Clustering）和 转录组数据清理 （transcript clean up）
 *IsoSeq3* 使用 单聚类 技术。
-由于 单聚类 算法的特性，该聚类步骤无法高效的分解成并行计算的多个步骤，因此我们建议
-在执行`isoseq3 cluster`时，使用较多的CPU内核以加快运行速度。
+由于算法的自身特性，这个聚类任务无法被高效的分解成并行计算的多个子任务，因此我们建议
+在执行`isoseq3 cluster`时，不将其拆分成子任务，而是使用较多的CPU内核以加快运行速度。
 
 *isoseq3 cluster*包含如下功能：
 
- - 去除聚腺苷酸链[Trimming](https://github.com/PacificBiosciences/trim_isoseq_polyA) of polyA tails
- - 去除人为并联读子 [concatmer identification](https://github.com/jeffdaily/parasail) and removal
- - 分层迭代聚类 Clustering using hierarchical n*log(n) [alignment](https://github.com/lh3/minimap2) and iterative cluster merging
- - 生成粗粒度多分子一致性序列 Unpolished [POA](https://github.com/rvaser/spoa) sequence generation
+ - 去除聚腺苷酸链 [Trimming of polyA tails](https://github.com/PacificBiosciences/trim_isoseq_polyA)
+ - 去除人为并联读子 [concatmer identification and removal](https://github.com/jeffdaily/parasail)
+ - 分层迭代聚类 [Clustering using hierarchical n*log(n) alignment](https://github.com/lh3/minimap2) and iterative cluster merging
+ - 生成粗粒度多分子一致性序列 [Unpolished POA sequence generation](https://github.com/rvaser/spoa)
 
 ##### 输入
-*cluster* 的输入文件必须是demultiplexed CCS文件:
+*cluster* 的输入文件必须是*lima* demultiplex 生成CCS文件:
 
  - `<demux.ccs.bam>` or `<demux.ccs.consensusreadset.xml>`
 
@@ -162,12 +163,14 @@ PacBio官方推荐 Clontech SMARTer cDNA library prep的样本制库协议。下
     isoseq3 cluster demux.P5--P3.bam unpolished.bam --verbose
 ```
 
-#### 打磨纠错 Polishing
-IsoSeq3使用*isoseq3 polish*命令进行打磨纠错得到isoform的多分子一致序列。
-*polish*虽然是可选的，但是我们仍然强烈推荐使用此步骤。*polish*的算法和CCS
-的算法是一致的，但使用多个ZMW的数据进行纠错得到更高精度的一致性序列。*polish*
-的算法和在基因组组装（de-novo assemblies）中使用的打磨纠错算法相同。*polish*
-这个任务很容易被分解成大量可并行计算的子任务，具体如下：
+#### 打磨纠错（Polishing）
+IsoSeq3使用 *isoseq3 polish* 命令进行打磨纠错得到isoform的多分子一致性序列。
+*polish* 是可选任务，但是我们强烈推荐使用它。
+*polish* 的算法和CCS的算法是一致的，但使用多个ZMW的数据进行纠错可以得到更高精度的一致性序列。
+*polish* 的算法和在基因组组装（de-novo assemblies）中使用的打磨纠错算法相同。
+
+*polish* 这个任务很容易被分解成大量可并行计算的子任务，具体如下：
+
   - 调用 `isoseq3 cluster --split-bam`将`unpolished.bam`分成多个小文件
   - 对每个生成的小文件调用`isoseq3 polish`进行打磨纠错，生成`polished.bam`
   - 合并所有生成的`polished.bam`文件
@@ -189,7 +192,7 @@ IsoSeq3使用*isoseq3 polish*命令进行打磨纠错得到isoform的多分子�
  - `<movie_name>.subreads.bam` 或者 `<movie_name>.subreadset.xml`
 
 ##### 输出
-*polish* 的输出文件包含打磨纠错后的isoforms：
+*polish* 的输出文件包含多分子打磨纠错后的isoforms：
 
  - `<prefix>.bam`     <- polished isoforms bam
  - `<prefix>.bam.pbi` <- Only generated with `--pbi`
@@ -208,8 +211,9 @@ IsoSeq3使用*isoseq3 polish*命令进行打磨纠错得到isoform的多分子�
 ## 安装
 
  - *ccs*: 安装官方 [SMRT Link](https://www.pacb.com/support/software-downloads/) 或者 从源代码编译 [unanimity](https://github.com/PacificBiosciences/unanimity)
- - *lima*: 下载预编译的执行程序 [barcoding](https://github.com/pacificbiosciences/barcoding)
- - *isoseq3*: 下载预编译的执行程序 [releases](https://github.com/PacificBiosciences/IsoSeq3/releases)
+ - *lima*: 下载预编译的执行程序 [barcoding](https://github.com/pacificbiosciences/barcoding) 
+ 或者 `conda install lima`
+ - *isoseq3*: 下载预编译的执行程序 [releases](https://github.com/PacificBiosciences/IsoSeq3/releases) 或者 `conda install isoseq3`
  
 将包含`ccs` `lima` `isoseq3`程序的文件夹加入`PATH`:
 
@@ -220,7 +224,7 @@ export PATH=$PATH:<path_to_binaries>
 ## 实例
 下面描述了从subreads开始到生成打磨纠错过的转录异构体（polished isoforms）结束的命令行流程。
 
-注意⚠️： `wget` `time`等辅助程序依赖于电脑操作系统，不是`isoseq3`提供的
+注意⚠️： `wget` `time`等辅助程序依赖于电脑操作系统OS，`isoseq3`不提供
 
 
     $ wget https://downloads.pacbcloud.com/public/dataset/RC0_1cell_2017/m54086_170204_081430.subreads.bam
@@ -285,8 +289,10 @@ export PATH=$PATH:<path_to_binaries>
     polished.bam  polished.bam.pbi  polished.hq.fasta.gz  polished.hq.fastq.gz  polished.lq.fasta.gz  polished.lq.fastq.gz  polished.transcriptset.xml
 
 如果您有多个SMRT Cells，您可以在调用`isoseq3 cluster`时使用`--split-bam`选项，将生成
-的`unpolished isoforms bam`文件分成若干小文件。每个小文件都可以并行处理，调用`isoseq3 polish`
-对每个小文件进行打磨纠错，得到`polished isoforms bam`文件，并将它们合并生成最终结果。
+的`unpolished isoforms bam`文件分成若干小文件。
+调用 `isoseq3 polish` 对每个小文件进行打磨纠错，得到`polished isoforms bam`文件，并将它们合并生成最终结果。
+
+注意⚠️：针对不同小文件的 `isoseq3 polish` 任务可以并行处理，
 
 
 例如，下面将polish任务分成了24小块:
@@ -301,60 +307,60 @@ export PATH=$PATH:<path_to_binaries>
     
 
 ## 常见问题
-### 为何我们开发IsoSeq3并推荐用户使用IsoSeq3？
+### 为何我们开发IsoSeq3，并推荐用户使用IsoSeq3？
 
-随着PacBio的测序数据通量不断的增加，我们需要可快速处理百万级CCS数据的IsoSeq算法。此算法必须
-可扩展，快速高效，并且保持高敏感性和特异性。PacBio研发部门对IsoSeq3进行了大量测试，结果显示
-IsoSeq3运行速度比IsoSeq1和IsoSeq2均快十几到几十倍。同时[SQANTI](https://bitbucket.org/ConesaLab/sqanti) 显示IsoSeq3生成更多数量完美符合参考转录组的数据。此外，IsoSeq3的安装非常容易，没有
-除了对Linux操作系统以外的其他依赖关系。
+随着 PacBio Sequel 系统测序数据通量不断的增加，我们需要可快速处理百万级CCS数据的IsoSeq算法。
+此算法必须 可扩展，快速高效，并且保持 高敏感性 和 高特异性。
+PacBio研发部门对IsoSeq3进行了大量测试，结果显示IsoSeq3运行速度比IsoSeq1和IsoSeq2快十几到几十倍。
+同时[SQANTI](https://bitbucket.org/ConesaLab/sqanti)的评估显示IsoSeq3生成更多数量完美符合参考转录组的数据。
+此外，IsoSeq3非常容易安装，只Linux操作系统，除此以外无其他依赖关系。
 
 
 ### 为何IsoSeq3生成数量较少的转录异构体？
 
-我们观察到IsoSeq3生成数量稍少，但质量更高的打磨纠错过的转录组`polished isoforms`。
-大部分的低质量的转录组数据都在`demultiplexing`步骤中过滤了。*Isoseq1/2 classify*的过滤
-标准较为宽松，导致一些质量较差或有缺陷的数据被保留成Full-Length Non-Chimeric reads。
-IsoSeq3使用`lima`进行`demultiplexing`，`lima`更好的检测并过滤低质量和有缺陷数据。比如
-`lima`非常精准的检测和剔除含错误标签的谁，比如两个5‘ 或者两个3’或者TSO（Template Switching)
-缺陷数据。`lima`只对含有正确5‘ primer 和 3’ primer组合，并且有合适PolyA的CCS进行处理，
-得到Full-Length Non-Chimeric的全长读子。
+我们观察到IsoSeq3生成 数量稍少，但质量更高的转录组数据（polished isoforms）。
+主要原因是在*lima* `demultiplexing`步骤过滤更多低质量的转录组数据。
+*Isoseq1/2 classify*的过滤标准较为宽松，导致一些质量较差或有缺陷的数据被保留成Full-Length Non-Chimeric reads，并进入聚类和打磨纠错任务。
+IsoSeq3使用`lima`进行`demultiplexing`，`lima`更精确得检测并过滤低质量和有缺陷数据。
+比如`lima`能非常精准的检测和剔除含错误标签的ccs，比如两个5‘ 或者两个3’或者TSO（Template Switching)
+缺陷数据。
+`lima`识别 含有正确5‘ primer 和 3’ primer，并且有合适PolyA的CCS，并进行处理
+以生成全长读子（Full-Length Non-Chimeric reads）。
 
 ### 为何我找不到*classify* 步骤
 
-*Classify* 步骤 现在调用 PacBio标准 demultiplexing 工具 *lima* 通过`--isoseq`模式提供.
+*Classify* 现在通过调用 PacBio标准 demultiplexing 工具 *lima* 通过`--isoseq`模式提供.
 
 注意⚠️：*Lima* 并不去除PolyA聚腺苷酸链，也不检测人工联合读子（concatemer）。
-如何去除PolyA和联合读子 见下一个问题。
+如何去除PolyA和联合读子 在下一个问题解释。
 
 
 ### 我如何得到FLNC reads（全长 无5‘ primer，无3‘ primer，无PolyA，过滤人工缺陷读子）全长读子?
 
-聚类`isoseq3 cluster`任务第一步生成　`*.flnc.bam`文件，此文件包含所有FLNC reads。
+聚类任务 `isoseq3 cluster` 第一步生成　`*.flnc.bam`文件，包含所有FLNC reads。
 如果您只需要FLNC reads，在`*.flnc.bam`文件生成后，您可以终止`isoseq3 cluster`任务。
 
 
 ### 需要多久才能处理完所有我的数据？
 
 目前`isoseq3`没有估计剩余时间的功能。运行时间会根据样本的类型不一样而变化，全转录组分析 和
-靶向转录组分析 速度也不一样， 一般而言，处理相同数量的读子，全转录组样本在几分钟内完成，而
-分析10kb靶向转录组数据需要几个小时。
+靶向转录组分析 速度也不一样。我们的测试数据显示 ，如果使用 16 个CPU core，处理一个SMRT Cell，分析 全转录组样本 在几分钟内完成，而分析10kb 靶向转录组样本 需要几个小时。
 
 
 ### 聚类Clustering使用什么算法？
 
-和IsoSeq1 以及 IsoSeq2不同，*IsoSeq3*不使用NP-Hard的最大团寻找算法（clique finding），
-而是使用分层对比的策略，算法复杂度是`O(N*log(N))`。今年来的快速对比算法的进步使得我们开发此
-新算法成为可能。
+与IsoSeq1 以及 IsoSeq2不同，*IsoSeq3*不使用NP-Hard的最大团寻找算法（clique finding）；
+而是使用分层对比的策略。该算法复杂度是`O(N*log(N))`。
+感谢近年来的快速对比算法的快速发展，使得我们开发此新算法成为可能。
 
 ### *Cluster* 使用多少CCS读子 以 生成 未经打磨纠错的的转录组类的代表序列（unpolished cluster 
 sequence representation）?
 
-*Cluster* 最多使用 10 个CCS读子以生成 一个unpolished cluster consensus.
+*Cluster* 最多使用 10 个CCS读子以生成 一个未经打磨纠错的的转录组类的代表序列（unpolished cluster sequence representation）.
 
 ### *Polish* 使用多少subreads来进行打磨纠错（Polish）？
 
-*Polish* 最多使用 60 个subreads读子以对转录异构体进行打磨纠错(polish the cluster consensus)
-以得到多分子一致性序列。
+*Polish* 最多使用 60 个subreads读子以转录异构体（isoform）进行对多分子打磨纠错(polish the cluster consensus)，以得到多分子一致性序列。
 
 ### 划为同一个类的两个读子必须满足什么条件？
 
@@ -362,7 +368,11 @@ sequence representation）?
 
 <img width="1000px" src="doc/img/isoseq3-similar-transcripts.png"/>
 
-注意⚠️：5‘差异必须少于100bp，3’差异必须少于30bp，内部任何连续gap（包括mismatch/indels）必须少于10bp
+注意⚠️：5‘差异必须少于100bp
+
+注意⚠️：3’差异必须少于30bp
+
+注意⚠️：此外，内部任何连续gap（包括mismatch/indels）必须少于10bp
 
 注意⚠️：只对两个读子对比alignment的gap长度有限制，对数量没有限制。
 
