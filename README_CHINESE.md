@@ -6,13 +6,11 @@
 
 ## Scope
 
-*IsoSeq3* 是从 PacBio 单分子测序数据 中识别转录组数据的最新软件工具。
+*IsoSeq3* 是从 PacBio 单分子测序数据 中识别转录组数据的最新软件。
 从SMRTLink V6.0开始，*图形化的Iso-Seq应用协议* 将从底层调用 *IsoSeq3*
-库中的软件工具。
+库中的软件。
 
-*IsoSeq3* 包含 组件化的工作流程和算法，尤其使用了新的聚类算法，可以快速高效
-处理更大通量的PacBio数据，并生成和*IsoSeq1* 以及 *IsoSeq2* 相似的高质量
-的转录组分析结果。
+*IsoSeq3* 包含 组件化的工作流程和算法，尤其使用了新的聚类算法，可以快速高效得处理更大通量的PacBio数据，并生成和*IsoSeq1* 以及 *IsoSeq2* 相似的高质量的转录组分析结果。
 
 
 ## 概述
@@ -60,8 +58,8 @@ GitHub和Bioconda上的非正式release程序。
 ### 输入
 对每个被分析的PacBio SMRTCell，须提供以下文件：
 
-    - `<movie>.subreads.bam` 
-    - `<movie>.subreads.bam.pbi`
+    <movie>.subreads.bam
+    <movie>.subreads.bam.pbi
 
 
 ### CCS 单分子环状一致性序列
@@ -73,7 +71,7 @@ GitHub和Bioconda上的非正式release程序。
 例子：
 
 ```
-    ccs movie.subreads.bam ccs.bam --no-polish --num-passes 1
+ccs movie.subreads.bam ccs.bam --no-polish --num-passes 1
 ```
 
 ### Primer removal 以及 demultiplexing
@@ -160,7 +158,7 @@ PacBio官方推荐 Clontech SMARTer cDNA library prep的样本制库协议。
 例子:
 
 ```
-    isoseq3 cluster demux.P5--P3.bam unpolished.bam --verbose
+isoseq3 cluster demux.P5--P3.bam unpolished.bam --verbose
 ```
 
 #### 打磨纠错（Polishing）
@@ -205,7 +203,7 @@ IsoSeq3使用 *isoseq3 polish* 命令进行打磨纠错得到isoform的多分子
 例子：
 
 ```
-    isoseq3 polish unpolished.bam m54020_171110_2301211.subreads.bam polished.bam
+isoseq3 polish unpolished.bam m54020_171110_2301211.subreads.bam polished.bam
 ```
 
 ## 安装
