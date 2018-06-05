@@ -374,16 +374,16 @@ sequence representation）?
 
 注意⚠️：此外，内部任何连续gap（包括mismatch/indels）必须少于10bp
 
-注意⚠️：只对两个读子对比alignment的gap长度有限制，对数量没有限制。
+注意⚠️：内部gap只有10bp长度，没有数量限制。
 
 
 ### BAM tags详述
 
 *IsoSeq3* 使用以下BAM tags：
 
- - `ib` Barcode 综述: 以分号分隔的三元组列表，每个三元组个体都包含 以逗号分隔的 两个barcode的索引 以及 一个 ZMNW数目。例如: `0,1,20;0,3,5`
- - `im` 支持该转录异构体isoform的ZMW数目
- - `is` 支持该转录异构体isoform的ZMW名称
+ - `ib` Barcode 综述: 以分号分隔的三元组列表，每个三元组个体都包含 以逗号分隔的 两个barcode的索引 以及 一个 ZMNW数目。例如: `0,1,20;0,3,5`表示有两个三元组个体，第一个三元组是`0,1,20`，表示样本barcode的索引分别是`0`和`1`，支持此isoform的ZMW共有`20`个。第二个三组是`0,3,5`表示样本barcode索引分别是`0`和`3`，支持此isoform的ZMW共有`5`个。
+ - `im` 支持该转录异构体（isoform）的ZMW数目
+ - `is` 支持该转录异构体（isoform）的ZMW名称
  - `iz` 打磨纠错（Polish）中使用的最大数量的subreads
  - `rq` 预测 打磨纠错后的多分子一致性序列（Polished isoform）的准确度
 
