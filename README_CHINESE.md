@@ -7,8 +7,8 @@
 ## Scope
 
 *IsoSeq3* 是从 PacBio 单分子测序数据 中识别转录组数据的最新软件工具。
-从SMRTLink V6.0开始，*图形化的Iso-Seq应用协议* 将从底层调用IsoSeq3库中
-的软件工具。
+从SMRTLink V6.0开始，*图形化的Iso-Seq应用协议* 将从底层调用 *IsoSeq3*
+库中的软件工具。
 
 *IsoSeq3* 包含 组件化的工作流程和算法，尤其使用了新的聚类算法，可以快速高效
 处理更大通量的PacBio数据，并生成和*IsoSeq1* 以及 *IsoSeq2* 相似的高质量
@@ -21,7 +21,6 @@
  - [安装](README_CHINESE.md#安装)
  - [实例](README_CHINESE.md#实例)
  - [常见问题](README_CHINESE.md#常见问题)
- - [DISCLAIMER](README_CHINESE.md#DISCLAIMER)
 
 ## Availability
 目前GitHub提供IsoSeq3 预售版本的下载
@@ -33,11 +32,16 @@
 ```
 
 注意⚠️：GitHub和Bioconda上的版本均不是正式release。
+
 注意⚠️：GitHub和Bioconda上的版本只能在Linux操作系统使用。
+
 注意⚠️：GitHub和Bioconda上的程序并非ISO compliant，只可用于研究，不用于医学诊断和治疗。
+
 注意⚠️：PacBio官方客户服务只支持正式发售的，稳定版SMRT Link中的Iso-Seq协议，不支持
 GitHub和Bioconda上的非正式release程序。
+
 注意⚠️：请通过GitHub Issues咨询您遇到的预售程序的问题。
+
 注意⚠️：GitHub和Bioconda上的版本要求电脑CPU支持**SSE4.1**，所有2008 （Penryn）之后的CPUs都支持SSE4.1
 
 
@@ -77,8 +81,10 @@ IsoSeq3调用[*lima*](https://github.com/pacificbiosciences/barcoding)以
 （demultiplexing）。
 
 注意⚠️：针对IsoSeq的的lima调用需使用`--isoseq` 模式。
+
 注意⚠️：如果样本库是含barcode的池化，*lima*将去除primer并进行demultiplexing。否则
 *lima*将仅仅去除primer。
+
 注意⚠️：IsoSeq3要求输入的primer文件（或primer+barcode）文件必须满足一定的规则，请
 查阅[FAQ](https://github.com/pacificbiosciences/barcoding#how-can-i-demultiplex-isoseq-data)
 以确保您提供的输入文件正确.
@@ -207,7 +213,9 @@ export PATH=$PATH:<path_to_binaries>
 
 ## 实例
 下面描述了从subreads开始到生成打磨纠错过的转录异构体（polished isoforms）结束的命令行流程。
+
 注意⚠️： `wget` `time`等辅助程序依赖于电脑操作系统，不是`isoseq3`提供的
+
 
     $ wget https://downloads.pacbcloud.com/public/dataset/RC0_1cell_2017/m54086_170204_081430.subreads.bam
     $ wget https://downloads.pacbcloud.com/public/dataset/RC0_1cell_2017/m54086_170204_081430.subreads.bam.pbi
@@ -304,8 +312,10 @@ IsoSeq3使用`lima`进行`demultiplexing`，`lima`更好的检测并过滤低质
 
 ### 为何我找不到*classify* 步骤
 *Classify* 步骤 现在调用 PacBio标准 demultiplexing 工具 *lima* 通过`--isoseq`模式提供.
+
 注意⚠️：*Lima* 并不去除PolyA聚腺苷酸链，也不检测人工联合读子（concatemer）。
 如何去除PolyA和联合读子 见下一个问题。
+
 
 ### 我如何得到FLNC reads（全长 无5‘ primer，无3‘ primer，无PolyA，过滤人工缺陷读子）全长读子?
 聚类`isoseq3 cluster`任务第一步生成　`*.flnc.bam`文件，此文件包含所有FLNC reads。
@@ -335,7 +345,9 @@ sequence representation）?
 如果任两个读子满足以下所有条件，*IsoSeq3* 认为它们来自同一个转录子：
 
 <img width="1000px" src="doc/img/isoseq3-similar-transcripts.png"/>
+
 注意⚠️：5‘差异必须少于100bp，3’差异必须少于30bp，内部任何连续gap（包括mismatch/indels）必须少于10bp
+
 注意⚠️：只对两个读子对比alignment的gap长度有限制，对数量没有限制。
 
 
