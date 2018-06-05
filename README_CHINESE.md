@@ -59,6 +59,7 @@ GitHub和Bioconda上的非正式release程序。
 
 ### 输入
 对每个被分析的PacBio SMRTCell，须提供以下文件：
+
     - `<movie>.subreads.bam` 
     - `<movie>.subreads.bam.pbi`
 
@@ -147,6 +148,7 @@ PacBio官方推荐 Clontech SMARTer cDNA library prep的样本制库协议。下
 
 ##### 输出
 *cluster* 的输出文件包括：
+
  - `<prefix>.bam`      <- Unpolished consensus isoforms bam
  - `<prefix>.flnc.bam` <- Full-Length Non-Chimeric reads
  - `<prefix>.fasta`    <- Unpolished consensus isoforms fasta
@@ -171,6 +173,7 @@ IsoSeq3使用*isoseq3 polish*命令进行打磨纠错得到isoform的多分子�
   - 合并所有生成的`polished.bam`文件
 
 例子：
+
 ```
     isoseq3 cluster unpolished.bam unpolished.chunk.bam --split-bam 3
     for i in 1 2 3; do \
@@ -181,11 +184,13 @@ IsoSeq3使用*isoseq3 polish*命令进行打磨纠错得到isoform的多分子�
 
 ##### 输入
 *polish* 的输入文件:
+
  - `<unpolished>.bam` 或者 `<unpolished>.transcriptset.xml`
  - `<movie_name>.subreads.bam` 或者 `<movie_name>.subreadset.xml`
 
 ##### 输出
 *polish* 的输出文件包含打磨纠错后的isoforms：
+
  - `<prefix>.bam`     <- polished isoforms bam
  - `<prefix>.bam.pbi` <- Only generated with `--pbi`
  - `<prefix>.transcriptset.xml` <- Only relevant for pbsmrtpipe
@@ -201,6 +206,7 @@ IsoSeq3使用*isoseq3 polish*命令进行打磨纠错得到isoform的多分子�
 ```
 
 ## 安装
+
  - *ccs*: 安装官方 [SMRT Link](https://www.pacb.com/support/software-downloads/) 或者 从源代码编译 [unanimity](https://github.com/PacificBiosciences/unanimity)
  - *lima*: 下载预编译的执行程序 [barcoding](https://github.com/pacificbiosciences/barcoding)
  - *isoseq3*: 下载预编译的执行程序 [releases](https://github.com/PacificBiosciences/IsoSeq3/releases)
@@ -283,7 +289,8 @@ export PATH=$PATH:<path_to_binaries>
 对每个小文件进行打磨纠错，得到`polished isoforms bam`文件，并将它们合并生成最终结果。
 
 
-例如，下面将polish任务分成了24小块。
+例如，下面将polish任务分成了24小块:
+
    - 例子中的`sample.subreadset.xml`包含所有SMRT Cells。
    - 例子中的`isoseq3 polish`任务都可以并行处理。
 
@@ -295,6 +302,7 @@ export PATH=$PATH:<path_to_binaries>
 
 ## 常见问题
 ### 为何我们开发IsoSeq3并推荐用户使用IsoSeq3？
+
 随着PacBio的测序数据通量不断的增加，我们需要可快速处理百万级CCS数据的IsoSeq算法。此算法必须
 可扩展，快速高效，并且保持高敏感性和特异性。PacBio研发部门对IsoSeq3进行了大量测试，结果显示
 IsoSeq3运行速度比IsoSeq1和IsoSeq2均快十几到几十倍。同时[SQANTI](https://bitbucket.org/ConesaLab/sqanti) 显示IsoSeq3生成更多数量完美符合参考转录组的数据。此外，IsoSeq3的安装非常容易，没有
@@ -302,6 +310,7 @@ IsoSeq3运行速度比IsoSeq1和IsoSeq2均快十几到几十倍。同时[SQANTI]
 
 
 ### 为何IsoSeq3生成数量较少的转录异构体？
+
 我们观察到IsoSeq3生成数量稍少，但质量更高的打磨纠错过的转录组`polished isoforms`。
 大部分的低质量的转录组数据都在`demultiplexing`步骤中过滤了。*Isoseq1/2 classify*的过滤
 标准较为宽松，导致一些质量较差或有缺陷的数据被保留成Full-Length Non-Chimeric reads。
@@ -311,6 +320,7 @@ IsoSeq3使用`lima`进行`demultiplexing`，`lima`更好的检测并过滤低质
 得到Full-Length Non-Chimeric的全长读子。
 
 ### 为何我找不到*classify* 步骤
+
 *Classify* 步骤 现在调用 PacBio标准 demultiplexing 工具 *lima* 通过`--isoseq`模式提供.
 
 注意⚠️：*Lima* 并不去除PolyA聚腺苷酸链，也不检测人工联合读子（concatemer）。
@@ -318,30 +328,36 @@ IsoSeq3使用`lima`进行`demultiplexing`，`lima`更好的检测并过滤低质
 
 
 ### 我如何得到FLNC reads（全长 无5‘ primer，无3‘ primer，无PolyA，过滤人工缺陷读子）全长读子?
+
 聚类`isoseq3 cluster`任务第一步生成　`*.flnc.bam`文件，此文件包含所有FLNC reads。
 如果您只需要FLNC reads，在`*.flnc.bam`文件生成后，您可以终止`isoseq3 cluster`任务。
 
 
 ### 需要多久才能处理完所有我的数据？
+
 目前`isoseq3`没有估计剩余时间的功能。运行时间会根据样本的类型不一样而变化，全转录组分析 和
 靶向转录组分析 速度也不一样， 一般而言，处理相同数量的读子，全转录组样本在几分钟内完成，而
 分析10kb靶向转录组数据需要几个小时。
 
 
 ### 聚类Clustering使用什么算法？
+
 和IsoSeq1 以及 IsoSeq2不同，*IsoSeq3*不使用NP-Hard的最大团寻找算法（clique finding），
 而是使用分层对比的策略，算法复杂度是`O(N*log(N))`。今年来的快速对比算法的进步使得我们开发此
 新算法成为可能。
 
 ### *Cluster* 使用多少CCS读子 以 生成 未经打磨纠错的的转录组类的代表序列（unpolished cluster 
 sequence representation）?
+
 *Cluster* 最多使用 10 个CCS读子以生成 一个unpolished cluster consensus.
 
-### *Polish* 使用多少subreads来进行打磨纠错？
+### *Polish* 使用多少subreads来进行打磨纠错（Polish）？
+
 *Polish* 最多使用 60 个subreads读子以对转录异构体进行打磨纠错(polish the cluster consensus)
 以得到多分子一致性序列。
 
 ### 划为同一个类的两个读子必须满足什么条件？
+
 如果任两个读子满足以下所有条件，*IsoSeq3* 认为它们来自同一个转录子：
 
 <img width="1000px" src="doc/img/isoseq3-similar-transcripts.png"/>
@@ -352,6 +368,7 @@ sequence representation）?
 
 
 ### BAM tags详述
+
 *IsoSeq3* 使用以下BAM tags：
 
  - `ib` Barcode 综述: 以分号分隔的三元组列表，每个三元组个体都包含 以逗号分隔的 两个barcode的索引 以及 一个 ZMNW数目。例如: `0,1,20;0,3,5`
